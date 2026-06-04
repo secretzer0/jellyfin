@@ -14,6 +14,7 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -271,7 +272,7 @@ public class ItemsController : BaseJellyfinApiController
             && user.GetPreference(PreferenceKind.AllowedTags).Length != 0
             && !fields.Contains(ItemFields.Tags))
         {
-            fields = [..fields, ItemFields.Tags];
+            fields = [.. fields, ItemFields.Tags];
         }
 
         var dtoOptions = new DtoOptions { Fields = fields }
@@ -280,10 +281,21 @@ public class ItemsController : BaseJellyfinApiController
         var item = _libraryManager.GetParentItem(parentId, userId);
         QueryResult<BaseItem> result;
 
+        Guid[] linkedChildAncestorIds = [];
         if (includeItemTypes.Length == 1
-            && includeItemTypes[0] == BaseItemKind.BoxSet
-            && item is not BoxSet)
+            && (includeItemTypes[0] == BaseItemKind.BoxSet || includeItemTypes[0] == BaseItemKind.Playlist)
+            && item is not BoxSet
+            && item is not Playlist)
         {
+            var itemCollectionType = item is IHasCollectionType hct ? hct.CollectionType : null;
+            var targetCollectionType = includeItemTypes[0] == BaseItemKind.BoxSet
+                ? CollectionType.boxsets
+                : CollectionType.playlists;
+            if (parentId.HasValue && item is not UserRootFolder && itemCollectionType != targetCollectionType)
+            {
+                linkedChildAncestorIds = [parentId.Value];
+            }
+
             parentId = null;
             item = _libraryManager.GetUserRootFolder();
         }
@@ -306,9 +318,6 @@ public class ItemsController : BaseJellyfinApiController
         }
         else if (folder is ICollectionFolder)
         {
-            // When the client doesn't specify recursive/includeItemTypes, force the query
-            // through the database path where all filters (IsHD, genres, etc.) are applied.
-            recursive ??= true;
             if (includeItemTypes.Length == 0)
             {
                 includeItemTypes = collectionType switch
@@ -317,6 +326,13 @@ public class ItemsController : BaseJellyfinApiController
                     null => [BaseItemKind.Movie, BaseItemKind.Series],
                     _ => []
                 };
+            }
+
+            // When the client doesn't specify recursive/includeItemTypes, force the query
+            // through the database path where all filters (IsHD, genres, etc.) are applied.
+            if (includeItemTypes.Length > 0)
+            {
+                recursive ??= true;
             }
         }
 
@@ -405,6 +421,7 @@ public class ItemsController : BaseJellyfinApiController
                 MaxPremiereDate = maxPremiereDate?.ToUniversalTime(),
                 AudioLanguages = audioLanguages,
                 SubtitleLanguages = subtitleLanguages,
+                LinkedChildAncestorIds = linkedChildAncestorIds,
             };
 
             if (ids.Length != 0 || !string.IsNullOrWhiteSpace(searchTerm))
