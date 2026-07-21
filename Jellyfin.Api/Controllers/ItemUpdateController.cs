@@ -279,6 +279,11 @@ public class ItemUpdateController : BaseJellyfinApiController
             item.DateCreated = NormalizeDateTime(request.DateCreated.Value);
         }
 
+        if (request.SeriesName is not null && item is IHasSeries hasSeries)
+        {
+            hasSeries.SeriesName = request.SeriesName;
+        }
+
         item.EndDate = request.EndDate.HasValue ? NormalizeDateTime(request.EndDate.Value) : null;
         item.PremiereDate = request.PremiereDate.HasValue ? NormalizeDateTime(request.PremiereDate.Value) : null;
         item.ProductionYear = request.ProductionYear;
@@ -297,6 +302,8 @@ public class ItemUpdateController : BaseJellyfinApiController
         {
             foreach (var season in rseries.Children.OfType<Season>())
             {
+                season.SeriesName = rseries.Name;
+
                 if (!season.LockedFields.Contains(MetadataField.OfficialRating))
                 {
                     season.OfficialRating = request.OfficialRating;
@@ -314,6 +321,8 @@ public class ItemUpdateController : BaseJellyfinApiController
 
                 foreach (var ep in season.Children.OfType<Episode>())
                 {
+                    ep.SeriesName = rseries.Name;
+
                     if (!ep.LockedFields.Contains(MetadataField.OfficialRating))
                     {
                         ep.OfficialRating = request.OfficialRating;
