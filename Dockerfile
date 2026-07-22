@@ -24,8 +24,15 @@ ARG APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
 ENV NVIDIA_VISIBLE_DEVICES="all"
 ENV NVIDIA_DRIVER_CAPABILITIES="compute,video,utility"
 
+# Same set as the official jellyfin-packaging docker image. CONFIG_DIR and LOG_DIR
+# must be explicit: the server only skips its $XDG_CONFIG_HOME fallback when the
+# config dir already exists or --datadir was given on the command line, so on a
+# fresh volume it would otherwise resolve config to $HOME/.config/jellyfin.
 ENV JELLYFIN_DATA_DIR=/config
 ENV JELLYFIN_CACHE_DIR=/cache
+ENV JELLYFIN_CONFIG_DIR=/config/config
+ENV JELLYFIN_LOG_DIR=/config/log
+ENV XDG_CACHE_HOME=/cache
 
 # https://github.com/intel/compute-runtime/releases
 ARG GMMLIB_VERSION=22.3.11.ci17757293

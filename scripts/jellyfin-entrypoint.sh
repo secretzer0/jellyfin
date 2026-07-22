@@ -34,10 +34,4 @@ else
     echo "[entrypoint] no bundle dir at $BUNDLE_DIR, skipping plugin sync"
 fi
 
-# Pass datadir/cachedir as CLI flags like the official packaging entrypoint does:
-# the XDG fallback in StartupHelpers only honors the CLI flag, not JELLYFIN_DATA_DIR,
-# so a fresh volume without config/ would otherwise resolve to $HOME/.config and crash.
-exec /jellyfin/jellyfin \
-    --datadir "${JELLYFIN_DATA_DIR:-/config}" \
-    --cachedir "${JELLYFIN_CACHE_DIR:-/cache}" \
-    --ffmpeg /usr/lib/jellyfin-ffmpeg/ffmpeg "$@"
+exec /jellyfin/jellyfin --ffmpeg /usr/lib/jellyfin-ffmpeg/ffmpeg "$@"
