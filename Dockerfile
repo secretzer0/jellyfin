@@ -88,6 +88,7 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends git ca-certificates python3 \
  && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /repo /repo
+COPY --from=builder /jellyfin /jellyfin-server
 COPY scripts/build-plugins.sh /work/build-plugins.sh
 RUN bash /work/build-plugins.sh
 

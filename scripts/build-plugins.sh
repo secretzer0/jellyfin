@@ -19,7 +19,10 @@ PLUGIN_BRANCH="${PLUGIN_BRANCH:-12-compat}"
 REPO_ROOT="${REPO_ROOT:-/repo}"
 OUT="${OUT:-/work/out}"
 SRC_DIR="${SRC_DIR:-/work/src}"
+SERVER_DIR="${SERVER_DIR:-/jellyfin-server}"   # server publish output, used to filter plugin deps
 mkdir -p "$OUT" "$SRC_DIR"
+
+[[ -d "$SERVER_DIR" ]] || { echo "server publish output missing at $SERVER_DIR" >&2; exit 1; }
 
 FAILED=()
 
@@ -68,16 +71,14 @@ build_plugin() {
     cp "$publish_dir/$dll_name" "$pdir/"
 
     # Third-party dependency assemblies (e.g. Tvdb.Sdk) must ship alongside the plugin
-    # or it fails to load with FileNotFoundException. Jellyfin.*/MediaBrowser.*/Emby.*
-    # come from the server and Microsoft.*/System.* from the shared framework, so skip
-    # those to avoid loading a second copy.
+    # or it fails to load with FileNotFoundException. Anything the server already
+    # publishes is skipped -- a second copy in the plugin dir gets loaded as a distinct
+    # assembly and breaks type identity against the server's instance.
     for dep in "$publish_dir"/*.dll; do
         local depname
         depname="$(basename "$dep")"
-        case "$depname" in
-            Jellyfin.*|MediaBrowser.*|Emby.*|Microsoft.*|System.*|netstandard.dll) continue ;;
-        esac
         [[ "$depname" == "$dll_name" ]] && continue
+        [[ -f "$SERVER_DIR/$depname" ]] && continue
         echo "    bundling dependency: $depname"
         cp "$dep" "$pdir/"
     done
