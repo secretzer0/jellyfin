@@ -67,6 +67,21 @@ build_plugin() {
     mkdir -p "$pdir"
     cp "$publish_dir/$dll_name" "$pdir/"
 
+    # Third-party dependency assemblies (e.g. Tvdb.Sdk) must ship alongside the plugin
+    # or it fails to load with FileNotFoundException. Jellyfin.*/MediaBrowser.*/Emby.*
+    # come from the server and Microsoft.*/System.* from the shared framework, so skip
+    # those to avoid loading a second copy.
+    for dep in "$publish_dir"/*.dll; do
+        local depname
+        depname="$(basename "$dep")"
+        case "$depname" in
+            Jellyfin.*|MediaBrowser.*|Emby.*|Microsoft.*|System.*|netstandard.dll) continue ;;
+        esac
+        [[ "$depname" == "$dll_name" ]] && continue
+        echo "    bundling dependency: $depname"
+        cp "$dep" "$pdir/"
+    done
+
     local image_path_field=""
     if [[ -n "$image_filename" ]]; then
         for candidate in "$src/$image_filename" "$src/$proj_dir/$image_filename"; do
