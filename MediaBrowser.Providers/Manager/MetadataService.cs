@@ -1038,6 +1038,11 @@ namespace MediaBrowser.Providers.Manager
                 target.OriginalTitle = source.OriginalTitle;
             }
 
+            if (replaceData || string.IsNullOrEmpty(target.HomePageUrl))
+            {
+                target.HomePageUrl = source.HomePageUrl;
+            }
+
             if (replaceData || string.IsNullOrEmpty(target.OriginalLanguage))
             {
                 target.OriginalLanguage = source.OriginalLanguage;
@@ -1114,7 +1119,7 @@ namespace MediaBrowser.Providers.Manager
                 target.PremiereDate = source.PremiereDate;
             }
 
-            if (replaceData || !target.ProductionYear.HasValue)
+            if (replaceData || target.ProductionYear is null)
             {
                 target.ProductionYear = source.ProductionYear;
             }
