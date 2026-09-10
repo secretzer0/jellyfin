@@ -24,7 +24,7 @@ if [[ -d "$BUNDLE_DIR" ]]; then
         echo ""
         echo "######################################################################"
         echo "# WARNING: the following plugins failed to compile against this image #"
-        echo "# (left at their previous version on disk, will fail to load at 12.x): #"
+        echo "# (left at their previous version on disk, will fail to load at 13.x): #"
         while IFS= read -r line; do echo "#   - $line"; done < "$BUNDLE_DIR/.failed.txt"
         echo "# Patch scripts/build-plugins.sh and rebuild the image to recover.    #"
         echo "######################################################################"

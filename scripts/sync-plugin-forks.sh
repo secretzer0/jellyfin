@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Pull latest from upstream into each plugin fork and rebase 12-compat on top.
+# Pull latest from upstream into each plugin fork and rebase 13-compat on top.
 # Fails loud and stops on any rebase conflict so the human can resolve.
 #
 # What this does per plugin:
 #   git fetch upstream
 #   git checkout master && git merge --ff-only upstream/master && git push origin master
-#   git checkout 12-compat && git rebase master
+#   git checkout 13-compat && git rebase master
 #     ↳ if conflict: stop, leave the work tree in mid-rebase state, report.
-#   git push origin 12-compat --force-with-lease   (only if rebase clean)
+#   git push origin 13-compat --force-with-lease   (only if rebase clean)
 #
 # Pushes only to origin (secretzer0). Upstream is fetched, never pushed to.
 
@@ -73,20 +73,20 @@ sync_repo() {
         git push origin master
     fi
 
-    git checkout 12-compat >/dev/null 2>&1 || git checkout -b 12-compat origin/12-compat
-    git reset --hard origin/12-compat >/dev/null 2>&1
+    git checkout 13-compat >/dev/null 2>&1 || git checkout -b 13-compat origin/13-compat
+    git reset --hard origin/13-compat >/dev/null 2>&1
 
     if git merge-base --is-ancestor master HEAD; then
-        echo "    12-compat already contains current master; nothing to rebase"
-        UNCHANGED+=("$repo (12-compat)")
+        echo "    13-compat already contains current master; nothing to rebase"
+        UNCHANGED+=("$repo (13-compat)")
         cd "$WORK_ROOT"
         return 0
     fi
 
-    echo "    rebasing 12-compat onto master"
+    echo "    rebasing 13-compat onto master"
     if git rebase master 2>&1; then
-        echo "    REBASE CLEAN — pushing 12-compat"
-        git push origin 12-compat --force-with-lease
+        echo "    REBASE CLEAN — pushing 13-compat"
+        git push origin 13-compat --force-with-lease
         CLEAN+=("$repo")
     else
         echo "    !! REBASE CONFLICT in $repo. Work tree paused mid-rebase in $dir." >&2
@@ -110,7 +110,7 @@ echo "================================================================"
 echo "Plugin fork sync summary"
 echo "================================================================"
 if [[ ${#CLEAN[@]} -gt 0 ]]; then
-    echo "Cleanly rebased (12-compat updated):"
+    echo "Cleanly rebased (13-compat updated):"
     for r in "${CLEAN[@]}"; do echo "  + $r"; done
 fi
 if [[ ${#UNCHANGED[@]} -gt 0 ]]; then

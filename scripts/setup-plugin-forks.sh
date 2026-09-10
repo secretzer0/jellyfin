@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # One-time bootstrap: for each forked plugin under secretzer0/, set up:
 #   master    — tracks upstream jellyfin/<plugin>
-#   12-compat — branched from master, with proper git commits for
-#               (1) build config targeting server 12.0.0 / .NET 10
-#               (2) source patches bridging 10.11 → 12.0 API drift
+#   13-compat — branched from master, with proper git commits for
+#               (1) build config targeting server 13.0.0 / .NET 10
+#               (2) source patches bridging 10.11 → 13.0 API drift
 #
 # Re-runnable: skips work that is already in place. Use sync-plugin-forks.sh
-# afterwards to keep master + rebase 12-compat as upstream evolves.
+# afterwards to keep master + rebase 13-compat as upstream evolves.
 #
 # Pushes ONLY go to secretzer0 (origin). Upstream remote is fetch-only by
 # convention (we never run `git push upstream`).
@@ -50,26 +50,26 @@ setup_repo() {
     fi
     git push origin master
 
-    # Create or update 12-compat
-    if git show-ref --verify --quiet refs/remotes/origin/12-compat; then
-        git checkout -B 12-compat origin/12-compat
-        if ! git merge-base --is-ancestor master 12-compat; then
+    # Create or update 13-compat
+    if git show-ref --verify --quiet refs/remotes/origin/13-compat; then
+        git checkout -B 13-compat origin/13-compat
+        if ! git merge-base --is-ancestor master 13-compat; then
             git rebase master \
-                || { echo "Rebase CONFLICT on $repo 12-compat. Resolve in $dir and re-run." >&2; cd "$WORK_ROOT"; return 1; }
+                || { echo "Rebase CONFLICT on $repo 13-compat. Resolve in $dir and re-run." >&2; cd "$WORK_ROOT"; return 1; }
         fi
     else
-        git checkout -B 12-compat master
+        git checkout -B 13-compat master
     fi
 
     # Idempotent: skip patching if our patch commits are already present.
-    if git log --format=%s master..HEAD | grep -q "^build: target Jellyfin server 12.0.0"; then
-        echo "    Patches already applied at 12-compat tip; pushing branch."
-        git push -u origin 12-compat --force-with-lease
+    if git log --format=%s master..HEAD | grep -q "^build: target Jellyfin server "; then
+        echo "    Patches already applied at 13-compat tip; pushing branch."
+        git push -u origin 13-compat --force-with-lease
         cd "$WORK_ROOT"
         return 0
     fi
 
-    # ---- Patch 1: csproj for 12.0.0 / net10.0 / local ProjectReferences ----
+    # ---- Patch 1: csproj for 13.0.0 / net10.0 / local ProjectReferences ----
     local csproj="$proj/$proj.csproj"
     [[ -f "$csproj" ]] || { echo "csproj not found at $csproj" >&2; cd "$WORK_ROOT"; return 1; }
 
@@ -118,7 +118,7 @@ pathlib.Path(csproj_path).write_text(text)
 PY
 
     git add "$csproj"
-    git commit -m "build: target Jellyfin server 12.0.0 (.NET 10)
+    git commit -m "build: target Jellyfin server 13.0.0 (.NET 10)
 
 Switch from upstream Jellyfin.* NuGet packages (10.*) to local
 ProjectReferences against the secretzer0/jellyfin fork at /repo/.
@@ -152,7 +152,7 @@ string.IsNullOrEmpty checks with a HasValue check."
             ;;
     esac
 
-    git push -u origin 12-compat --force-with-lease
+    git push -u origin 13-compat --force-with-lease
     cd "$WORK_ROOT"
 }
 
@@ -163,4 +163,4 @@ setup_repo "jellyfin-plugin-tmdbboxsets"         "Jellyfin.Plugin.TMDbBoxSets"  
 setup_repo "jellyfin-plugin-tvdb"                "Jellyfin.Plugin.Tvdb"               "Data,Controller,Common,Model"
 
 echo ""
-echo "All forks set up. 12-compat branches pushed to ${FORK_OWNER}."
+echo "All forks set up. 13-compat branches pushed to ${FORK_OWNER}."

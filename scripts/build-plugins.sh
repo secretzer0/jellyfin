@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Build Jellyfin plugins from our fork's 12-compat branch.
+# Build Jellyfin plugins from our fork's 13-compat branch.
 #
 # Each plugin lives at secretzer0/<repo> with two branches:
 #   master    — tracks upstream jellyfin/<repo>
-#   12-compat — master + git commits carrying our build/source patches
+#   13-compat — master + git commits carrying our build/source patches
 #
-# This script clones the 12-compat branch and runs dotnet publish. No sed
+# This script clones the 13-compat branch and runs dotnet publish. No sed
 # patching — patches are real commits in the fork. To audit drift, diff
-# 12-compat against master; to rebase onto new upstream, see
+# 13-compat against master; to rebase onto new upstream, see
 # scripts/sync-plugin-forks.sh.
 #
 # Runs inside the plugin-builder Docker stage with /repo populated.
@@ -15,7 +15,7 @@
 set -euo pipefail
 
 FORK_OWNER="${FORK_OWNER:-secretzer0}"
-PLUGIN_BRANCH="${PLUGIN_BRANCH:-12-compat}"
+PLUGIN_BRANCH="${PLUGIN_BRANCH:-13-compat}"
 REPO_ROOT="${REPO_ROOT:-/repo}"
 OUT="${OUT:-/work/out}"
 SRC_DIR="${SRC_DIR:-/work/src}"
