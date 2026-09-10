@@ -185,6 +185,13 @@ namespace Emby.Server.Implementations.Dto
                 allCollectionFolders = _libraryManager.GetUserRootFolder().Children.OfType<Folder>().ToList();
             }
 
+            // Batch-fetch by-name item counts to avoid N+1 queries
+            Dictionary<Guid, ItemCounts>? itemCountsBatch = null;
+            if (options.ContainsField(ItemFields.ItemCounts))
+            {
+                itemCountsBatch = GetItemCountsBatch(accessibleItems, user);
+            }
+
             // Batch-fetch child counts for all folders to avoid N+1 queries
             Dictionary<Guid, int>? childCountBatch = null;
             if (options.ContainsField(ItemFields.ChildCount))
@@ -192,7 +199,7 @@ namespace Emby.Server.Implementations.Dto
                 var folderIds = accessibleItems.OfType<Folder>().Select(f => f.Id).ToList();
                 if (folderIds.Count > 0)
                 {
-                    childCountBatch = _libraryManager.GetChildCountBatch(folderIds, user?.Id);
+                    childCountBatch = _libraryManager.GetChildCountBatch(folderIds, user);
                 }
             }
 
@@ -293,7 +300,7 @@ namespace Emby.Server.Implementations.Dto
 
                 if (options.ContainsField(ItemFields.ItemCounts))
                 {
-                    SetItemByNameInfo(dto, user);
+                    SetItemByNameInfo(dto, user, itemCountsBatch);
                 }
 
                 returnItems[index] = dto;
@@ -518,14 +525,36 @@ namespace Emby.Server.Implementations.Dto
             return dto;
         }
 
-        private void SetItemByNameInfo(BaseItemDto dto, User? user)
+        private Dictionary<Guid, ItemCounts> GetItemCountsBatch(IReadOnlyList<BaseItem> items, User? user)
+        {
+            var result = new Dictionary<Guid, ItemCounts>();
+
+            foreach (var group in items.GroupBy(item => item.GetBaseItemKind()))
+            {
+                if (!_relatedItemKinds.TryGetValue(group.Key, out var relatedItemKinds))
+                {
+                    continue;
+                }
+
+                var ids = group.Select(item => item.Id).ToArray();
+                foreach (var (id, counts) in _libraryManager.GetItemCountsForNameItems(group.Key, ids, relatedItemKinds, user))
+                {
+                    result[id] = counts;
+                }
+            }
+
+            return result;
+        }
+
+        private void SetItemByNameInfo(BaseItemDto dto, User? user, IReadOnlyDictionary<Guid, ItemCounts>? prefetchedCounts = null)
         {
             if (!_relatedItemKinds.TryGetValue(dto.Type, out var relatedItemKinds))
             {
                 return;
             }
 
-            var counts = _libraryManager.GetItemCountsForNameItem(dto.Type, dto.Id, relatedItemKinds, user);
+            var counts = prefetchedCounts?.GetValueOrDefault(dto.Id)
+                ?? _libraryManager.GetItemCountsForNameItem(dto.Type, dto.Id, relatedItemKinds, user);
 
             dto.AlbumCount = counts.AlbumCount;
             dto.ArtistCount = counts.ArtistCount;
@@ -611,7 +640,11 @@ namespace Emby.Server.Implementations.Dto
                     // For these types we can try to optimize and assume these values will be equal
                     if (item is MusicAlbum || item is Season || item is Playlist)
                     {
-                        dto.ChildCount = dto.RecursiveItemCount;
+                        if (dto.RecursiveItemCount > 0)
+                        {
+                            dto.ChildCount = dto.RecursiveItemCount;
+                        }
+
                         var folderChildCount = folder.LinkedChildren.Length;
                         // The default is an empty array, so we can't reliably use the count when it's empty
                         if (folderChildCount > 0)
@@ -696,7 +729,8 @@ namespace Emby.Server.Implementations.Dto
                 return count;
             }
 
-            // Fall back to individual query for special cases (Series, Season, etc.)
+            // Only reached when no batch was computed: the batch holds an entry for every folder it
+            // was asked about, zero included.
             return folder.GetChildCount(user);
         }
 
