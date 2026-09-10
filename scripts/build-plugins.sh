@@ -123,35 +123,35 @@ PY
 # ---- Plugin manifest ----
 build_plugin "jellyfin-plugin-opensubtitles" "Jellyfin.Plugin.OpenSubtitles" \
     "Jellyfin.Plugin.OpenSubtitles.dll" "Open Subtitles" \
-    "4b9ed42f-5185-48b5-9803-6ff2989014c4" "24.0.0.0" "Subtitles" \
+    "4b9ed42f-5185-48b5-9803-6ff2989014c4" "25.0.0.0" "Subtitles" \
     "Download subtitles for your media" \
     "Download subtitles from the internet to use with your media files. (Requires configuration)" \
     "jellyfin-plugin-opensubtitles.png"
 
 build_plugin "jellyfin-plugin-playbackreporting" "Jellyfin.Plugin.PlaybackReporting" \
     "Jellyfin.Plugin.PlaybackReporting.dll" "Playback Reporting" \
-    "5c534381-91a3-43cb-907a-35aa02eb9d2c" "17.0.0.0" "Administration" \
+    "5c534381-91a3-43cb-907a-35aa02eb9d2c" "19.0.0.0" "Administration" \
     "Collect and show user play statistics" \
     "Show reports for playback activity" \
     "jellyfin-plugin-playbackreporting.png"
 
 build_plugin "jellyfin-plugin-reports" "Jellyfin.Plugin.Reports" \
     "Jellyfin.Plugin.Reports.dll" "Reports" \
-    "d4312cd9-5c90-4f38-82e8-51da566790e8" "18.0.0.0" "Administration" \
+    "d4312cd9-5c90-4f38-82e8-51da566790e8" "19.0.0.0" "Administration" \
     "Generate reports of your media library" \
     "Generate Reports" \
     "jellyfin-plugin-reports.png"
 
 build_plugin "jellyfin-plugin-tmdbboxsets" "Jellyfin.Plugin.TMDbBoxSets" \
     "Jellyfin.Plugin.TMDbBoxSets.dll" "TMDb Box Sets" \
-    "bc4aad2e-d3d0-4725-a5e2-fd07949e5b42" "13.0.0.0" "MoviesAndShows" \
+    "bc4aad2e-d3d0-4725-a5e2-fd07949e5b42" "14.0.0.0" "MoviesAndShows" \
     "Automatically create movie box sets based on TMDb collections" \
     "Automatically create movie box sets based on TMDb collections" \
     ""
 
 build_plugin "jellyfin-plugin-tvdb" "Jellyfin.Plugin.Tvdb" \
     "Jellyfin.Plugin.Tvdb.dll" "TheTVDB" \
-    "a677c0da-fac5-4cde-941a-7134223f14c8" "22.0.0.0" "MoviesAndShows" \
+    "a677c0da-fac5-4cde-941a-7134223f14c8" "24.0.0.0" "MoviesAndShows" \
     "Get TV metadata from TheTvdb" \
     "Get TV metadata from TheTvdb" \
     "jellyfin-plugin-tvdb.png"
