@@ -144,7 +144,7 @@ build_plugin "jellyfin-plugin-reports" "Jellyfin.Plugin.Reports" \
 
 build_plugin "jellyfin-plugin-tmdbboxsets" "Jellyfin.Plugin.TMDbBoxSets" \
     "Jellyfin.Plugin.TMDbBoxSets.dll" "TMDb Box Sets" \
-    "bc4aad2e-d3d0-4725-a5e2-fd07949e5b42" "14.0.0.0" "MoviesAndShows" \
+    "bc4aad2e-d3d0-4725-a5e2-fd07949e5b42" "15.0.0.0" "MoviesAndShows" \
     "Automatically create movie box sets based on TMDb collections" \
     "Automatically create movie box sets based on TMDb collections" \
     ""
